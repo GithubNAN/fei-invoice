@@ -15,8 +15,6 @@ const INVOICECELL = `E4`;
 const DATESENTCELL = `E5`;
 const DATEPERIODCELL = `A18`;
 
-// folder path
-const invoiceFolder = path.resolve(__dirname, "history");
 // latest file path
 const latestInvoice = path.resolve(
   __dirname,
@@ -31,7 +29,10 @@ const wage = 1000;
 moment.locale("en-AU");
 
 const workbook = new Excel.Workbook();
-workbook.xlsx.readFile(latestInvoice).then(function(wb) {
+
+async function run() {
+  const wb = await workbook.xlsx.readFile(latestInvoice);
+
   // Copying latest sheet workbook sheet
   wb.properties.date1904 = true;
   // Search the list of wb worksheet list
@@ -45,6 +46,12 @@ workbook.xlsx.readFile(latestInvoice).then(function(wb) {
   // Compose new worksheet name
   let week = parseInt(previousName.replace("W", ""));
   const newWorksheetName = `W${week + 1}`;
+
+  // Change config file
+  config.latestWeek = newWorksheetName;
+  config.latestInvoiceFileName = `Invoice Fei ${config.latestWeek}`;
+  // save config
+  // fs.outputJson(`./history/config.json`, config, err => console.log(err))
 
   // Change config file
   config.latestWeek = newWorksheetName;
@@ -105,15 +112,22 @@ workbook.xlsx.readFile(latestInvoice).then(function(wb) {
   // Change invoice periods
   new_sheet.getCell(DATEPERIODCELL).value = `${newStartDay} ~~ ${newEndDay}`;
 
-  new_wb.xlsx
-    .writeFile(
-      path.resolve(__dirname, "history", `${config.latestInvoiceFileName}.xlsx`)
-    )
-    .then(() => {
-        // save config
-        fs.outputJson(`./history/config.json`, config, err => console.log(err))
-    })
-    .catch(function(err) {
-      console.log(err);
-    });
-});
+  // Save file to history
+  await new_wb.xlsx.writeFile(
+    path.resolve(__dirname, "history", `${config.latestInvoiceFileName}.xlsx`)
+  );
+  // save config
+  await fs.outputJson(`./history/config.json`, config);
+  // Remove sendList folder item
+  await fs.emptyDir(path.resolve(__dirname, "sendList"));
+  // Save it again to sendList folder
+  await fs.copy(
+    path.resolve(__dirname, "history", `${config.latestInvoiceFileName}.xlsx`),
+    path.resolve(__dirname, "sendList", `${config.latestInvoiceFileName}.xlsx`)
+  )
+  // await new_wb.xlsx.writeFile(
+  //   path.resolve(__dirname, "sendList", `${config.latestInvoiceFileName}.xlsx`)
+  // );
+}
+
+run();
