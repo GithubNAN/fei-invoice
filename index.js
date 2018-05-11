@@ -18,7 +18,7 @@ const DATEPERIODCELL = 'A18';
 // latest file path
 const latestInvoice = path.resolve(__dirname, 'history', `${config.latestInvoiceFileName}.xlsx`);
 
-// weekly wage input HERE!
+// WEEKLY WAGE ENTER GOING HERE!!!!!!!
 const wage = 1000;
 
 // Moment time default setting
