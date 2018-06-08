@@ -19,7 +19,7 @@ const DATEPERIODCELL = 'A18';
 const latestInvoice = path.resolve(__dirname, 'history', `${config.latestInvoiceFileName}.xlsx`);
 
 // WEEKLY WAGE ENTER GOING HERE!!!!!!!
-const wage = 1000;
+const wage = 999.5;
 
 // Moment time default setting
 moment.locale('en-AU');
@@ -50,8 +50,7 @@ async function run() {
   // Change config file
   config.latestWeek = newWorksheetName;
   config.latestInvoiceFileName = `Invoice Fei ${config.latestWeek}`;
-  // save config
-  // fs.outputJson(`./history/config.json`, config, err => console.log(err))
+  config.wage = wage;
 
   // Create a new workbook and worksheet
   const newWorkbook = new Excel.Workbook();
@@ -103,6 +102,12 @@ async function run() {
   newSheet.getCell(DATESENTCELL).value = newDateSent;
   // Change invoice periods
   newSheet.getCell(DATEPERIODCELL).value = `${newStartDay} ~~ ${newEndDay}`;
+  // Save config file durationEndDay
+  config.durationEndDay = newEndDay;
+  config.latestInvoiceFileName = `${config.latestInvoiceFileName} [${config.durationEndDay.replace(
+    /\//gi,
+    '',
+  )}] (${config.wage})`;
 
   // Save file to history
   await newWorkbook.xlsx.writeFile(path.resolve(__dirname, 'history', `${config.latestInvoiceFileName}.xlsx`));
